@@ -10,8 +10,8 @@ var passport = require('passport');
 require('./models/models');
 var api = require('./routes/api');
 var authenticate = require('./routes/authenticate')(passport);
-var mongoose = require('mongoose');                         //add for Mongo support
-mongoose.connect('mongodb://localhost/test-chirp');              //connect to Mongo
+var mongoose = require('mongoose');                   //add for Mongo support
+mongoose.connect('mongodb://localhost/test-chirp');   //connect to Mongo
 var app = express();
 
 // view engine setup

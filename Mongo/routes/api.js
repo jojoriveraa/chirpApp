@@ -1,51 +1,88 @@
 var express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
+var Post = mongoose.model('Post');
 
 router.use(function (req, res, next) {
+
+    // Continue to next middleware or req handler
     if (req.method === "GET") {
-        // Continue to next middleware or req handler
         return next();
     }
 
     console.log('IsAuthenticated:', req.isAuthenticated());
 
+    // not authenticated user redirected to login
     if (!req.isAuthenticated()) {
-        // not authenticated user redirected to login
         return res.redirect('/#login');
     }
 
     // user authenticated continue tu next middleware or handler
     return next();
 });
+
 router.route('/posts')
 
     // returns all posts
     .get(function (req, res) {
-        // workaround
-        res.send({ message: 'TODO return all posts' });
+        Post.find(function (err, data) {
+            if (err) {
+                return res.send(500, err);
+            }
+            return res.send(data);
+        });
     })
 
     // create a post
     .post(function (req, res) {
-        // workaround
-        res.send({ message: 'TODO create a new post' });
+        var post = new Post();
+        post.text = req.body.text;
+        post.username = req.body.created_by;
+        post.save(function (err, post) {
+            if (err) {
+                return res.send(500, err);
+            }
+            return res.json(post);
+        });
     });
 
 router.route('/posts/:id')
 
     //returns a particualr post
     .get(function (req, res) {
-        res.send({ message: 'TODO return post with ID ' + req.params.id })
+        Post.findById(req.params.id, function (err, post) {
+            if (err) {
+                res.send(err);
+            }
+            res.json(post);
+        });
     })
 
     // update existing post
     .put(function (req, res) {
-        res.send({ message: 'TODO modify post with ID ' + req.params.id })
+        Post.findById(req.params.id, function (err, post) {
+            if (err) {
+                res.send(err);
+            }
+            post.created_by = req.body.created_by;
+            post.text = req.body.text;
+            post.save(function (err, post) {
+                if (err) {
+                    req.send(err);
+                }
+                req.json(post);
+            });
+        });
     })
 
     // delete existing post
     .delete(function (req, res) {
-        res.send({ message: 'TODO delete post with ID ' + req.params.id })
-    })
+        Post.remove({ _id: req.params.id }, function (err) {
+            if (err) {
+                res.send(err);
+            }
+            res.json('Deleted : (');
+        });
+    });
 
 module.exports = router;
